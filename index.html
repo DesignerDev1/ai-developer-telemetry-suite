@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Call Slim — LLM Token Pruning & Telemetry Demo</title>
+  
+  <!-- Tailwind CSS & Lucide Icons CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Gumroad JS for In-Page Modal Checkout -->
+  <script src="https://gumroad.com/js/gumroad.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+
+  <!-- Top Navigation CTA Banner -->
+  <header class="w-full max-w-4xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-4 mb-8 flex items-center justify-between shadow-2xl">
+    <div class="flex items-center gap-3">
+      <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+        <i data-lucide="zap" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-white tracking-tight">Call Slim Component</h1>
+        <p class="text-[11px] text-slate-400">AI Telemetry & Operations Suite</p>
+      </div>
+    </div>
+
+    <!-- Gumroad Overlay Checkout Button -->
+    <a 
+      class="gumroad-button bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+      href="https://YOUR_GUMROAD_USERNAME.gumroad.com/l/YOUR_PRODUCT_ID"
+      target="_blank"
+    >
+      <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+      Get Code ($29)
+    </a>
+  </header>
+
+  <!-- Demo Sandbox Section -->
+  <main class="w-full max-w-md space-y-6">
+
+    <!-- Interactive Simulator Controls -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+      <div class="flex justify-between items-center text-xs text-slate-400 font-mono">
+        <span>Interactive Payload Test:</span>
+        <span id="slider-label" class="text-emerald-400 font-bold">Medium (30% Pruned)</span>
+      </div>
+      <input 
+        id="prune-slider" 
+        type="range" 
+        min="10" 
+        max="60" 
+        value="30" 
+        step="5" 
+        class="w-full accent-emerald-400 cursor-pointer"
+        oninput="updateDemo(this.value)"
+      />
+    </div>
+
+    <!-- Live Call Slim Card Preview -->
+    <div class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Call Slim</h3>
+            <p class="text-[11px] text-slate-400">Token Optimization & Payload Pruning</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 bg-slate-950 border border-slate-800 text-emerald-400 text-[10px] font-mono rounded-full flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Active
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <div class="bg-slate-950 border border-slate-800/80 p-3.5 rounded-xl">
+          <span class="text-[10px] uppercase font-mono text-slate-400 block mb-1">Payload Reduction</span>
+          <div class="flex items-baseline gap-1">
+            <span id="stat-reduction" class="text-2xl font-bold font-mono text-emerald-400">-30.0%</span>
+            <i data-lucide="arrow-down-right" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <span id="stat-saved-tokens" class="text-[10px] text-slate-400 mt-1 block">360k Tokens Saved</span>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800/80 p-3.5 rounded-xl">
+          <span class="text-[10px] uppercase font-mono text-slate-400 block mb-1">Estimated Savings</span>
+          <span id="stat-dollars" class="text-2xl font-bold font-mono text-white">$0.72</span>
+          <span class="text-[10px] text-slate-400 mt-1 block">Direct API Cost Cut</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800/80 p-4 rounded-xl space-y-2 mb-5">
+        <div class="flex justify-between text-xs font-mono">
+          <span class="text-slate-400">Payload Density</span>
+          <span id="stat-density" class="text-slate-200">840k / 1,200k</span>
+        </div>
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden flex">
+          <div id="bar-optimized" class="bg-emerald-400 h-full transition-all duration-300 w-[70%]"></div>
+          <div id="bar-pruned" class="bg-slate-700/50 h-full transition-all duration-300 w-[30%]"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs font-mono text-slate-400 border-t border-slate-800/80 pt-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
+          <span>Latency: <strong class="text-slate-200">320ms</strong></span>
+        </div>
+        <div class="flex items-center gap-2 justify-end">
+          <i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i>
+          <span>Rate: <strong class="text-slate-200">85/100 RPM</strong></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function updateDemo(prunePct) {
+      const rawTokens = 1200000;
+      const prunedPct = parseFloat(prunePct);
+      const savedTokens = rawTokens * (prunedPct / 100);
+      const slimmedTokens = rawTokens - savedTokens;
+      const dollarsSaved = ((savedTokens / 1000) * 0.002).toFixed(2);
+
+      document.getElementById('slider-label').innerText = `Pruned: ${prunedPct}%`;
+      document.getElementById('stat-reduction').innerText = `-${prunedPct.toFixed(1)}%`;
+      document.getElementById('stat-saved-tokens').innerText = `${(savedTokens / 1000).toLocaleString()}k Tokens Saved`;
+      document.getElementById('stat-dollars').innerText = `$${dollarsSaved}`;
+      document.getElementById('stat-density').innerText = `${(slimmedTokens / 1000).toLocaleString()}k / 1,200k`;
+
+      const keepWidth = 100 - prunedPct;
+      document.getElementById('bar-optimized').style.width = `${keepWidth}%`;
+      document.getElementById('bar-pruned').style.width = `${prunedPct}%`;
+    }
+  </script>
+</body>
+</html>
